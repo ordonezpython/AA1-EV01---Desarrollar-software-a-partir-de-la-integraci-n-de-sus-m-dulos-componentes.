@@ -1,0 +1,93 @@
+<div class="card">
+  <div class="card-content">
+    <span class="card-title">Nueva Factura</span>
+ 
+<div class="input-field">
+  <input [(ngModel)]="factura.numero"
+         name="numero"
+         type="text"
+         placeholder="Número de factura"
+         required>
+</div>
+
+    <!-- Datos del cliente -->
+    <h5>Datos del Cliente</h5>
+    <div class="input-field">
+      <input [(ngModel)]="factura.cliente.nombres" name="nombres" type="text" placeholder="Nombres">
+    </div>
+    <div class="input-field">
+      <input [(ngModel)]="factura.cliente.apellidos" name="apellidos" type="text" placeholder="Apellidos">
+    </div>
+    <div class="input-field">
+      <input [(ngModel)]="factura.cliente.cedula" name="cedula" type="text" placeholder="Cédula">
+    </div>
+    <div class="input-field">
+      <input [(ngModel)]="factura.cliente.celular" name="celular" type="text" placeholder="Celular">
+    </div>
+    <div class="input-field">
+      <input [(ngModel)]="factura.cliente.correo" name="correo" type="email" placeholder="Correo">
+    </div>
+
+    <!-- Productos -->
+    <h5>Productos</h5>
+    <table class="highlight">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of factura.productos; let i = index">
+          <td><input [(ngModel)]="p.codigo" name="codigo{{i}}" type="text"></td>
+          <td><input [(ngModel)]="p.descripcion" name="descripcion{{i}}" type="text"></td>
+          <td><input [(ngModel)]="p.cantidad" name="cantidad{{i}}" type="number" (input)="calcularTotales()"></td>
+          <td><input [(ngModel)]="p.precioUnitario" name="precio{{i}}" type="number" (input)="calcularTotales()"></td>
+          <td>{{ p.subtotal ? (p.subtotal | currency:'COP') : '' }}</td>
+          <td>
+            <button class="btn red" (click)="factura.productos.splice(i,1); calcularTotales()">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Botón para agregar productos -->
+    <div class="section">
+      <button class="btn waves-effect waves-light" (click)="agregarProducto()">
+        Agregar producto
+      </button>
+    </div>
+
+    <!-- Totales -->
+<h5>Totales</h5>
+
+<p>Subtotal: {{ factura.subtotal ? (factura.subtotal | currency:'USD' : '$') : '' }}</p>
+<p>Impuestos: {{ factura.impuestos ? (factura.impuestos | currency:'USD' :'$') : '' }}</p>
+
+<div class="input-field">
+  <input [(ngModel)]="factura.descuentos"
+         name="descuentos"
+         type="number"
+         placeholder="Descuentos"
+         (input)="calcularTotales()">
+</div>
+<div class="section">
+  <button class="btn green" (click)="guardarFactura()">
+    Guardar Factura
+  </button>
+</div>
+
+<p>Descuentos: {{ factura.descuentos ? (factura.descuentos | currency:'$') : '' }}</p>
+<p><strong>Total: {{ factura.total ? (factura.total | currency:'$') : '' }}</strong></p>
+    <!-- Forma de pago -->
+   <div class="input-field">
+  <select [(ngModel)]="factura.formaPago" name="formaPago" id="" class="browser-default">
+    <option value="efectivo">Efectivo</option>
+    <option value="tarjeta">Tarjeta</option>
+    <option value="transferencia">Transferencia</option>
+  </select>
+</div>

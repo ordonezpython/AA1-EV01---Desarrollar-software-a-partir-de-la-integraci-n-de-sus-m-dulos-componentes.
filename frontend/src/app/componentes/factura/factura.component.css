@@ -1,0 +1,83 @@
+/* factura.component.css */
+
+/* Contenedor principal */
+.section {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+/* Inputs */
+.input-field {
+  margin-bottom: 15px;
+}
+
+.input-field input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Botón principal */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn.green {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.btn.green:hover {
+  background-color: #45a049;
+}
+
+/* Totales */
+.totales {
+  margin-top: 20px;
+  font-size: 16px;
+}
+
+.totales p {
+  margin: 5px 0;
+}
+
+.totales strong {
+  font-size: 18px;
+  color: #2c3e50;
+}
+/*Fondo general */
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4f8, #d9e4ec);
+  padding: 20px;
+}
+
+/* Encabezado */
+h1 {
+  text-align: center;   /* centra el texto */
+  color: #4CAF50;       /* cambia el color (verde) */
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Opcional: darle un estilo de caja al encabezado */
+.header-box {
+  background-color: #4CAF50; /* verde */
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 24px;
+}

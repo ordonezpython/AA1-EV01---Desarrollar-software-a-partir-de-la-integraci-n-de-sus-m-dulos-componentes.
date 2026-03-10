@@ -1,6 +1,7 @@
 const Factura = require("../models/factura");
 const PDFDocument = require("pdfkit");
 
+
 const facturaCtrl = {};
 
 // Obtener todas las facturas
@@ -16,11 +17,39 @@ facturaCtrl.getFacturas = async (req, res) => {
 // Crear factura
 facturaCtrl.createFactura = async (req, res) => {
   try {
-    const nuevaFactura = new Factura(req.body);
+    const { numero, cliente, productos, descuentos = 0, formaPago, cajero } = req.body;
+
+    // Calcular subtotal
+    const subtotal = productos.reduce((acc, p) => acc + (p.cantidad * p.precioUnitario), 0);
+
+    // Calcular impuestos (ejemplo: 19% IVA)
+    const impuestos = subtotal * 0.19;
+
+    // Calcular total
+    const total = subtotal + impuestos - descuentos;
+
+    // Generar productos con subtotales
+    const productosConSubtotal = productos.map(p => ({
+      ...p,
+      subtotal: p.cantidad * p.precioUnitario
+    }));
+
+    const nuevaFactura = new Factura({
+      numero,
+      cliente,
+      productos: productosConSubtotal,
+      subtotal,
+      impuestos,
+      descuentos,
+      total,
+      formaPago,
+      cajero
+    });
+
     await nuevaFactura.save();
     res.json({ status: "Factura guardada", factura: nuevaFactura });
   } catch (err) {
-    console.error("error al crear factura:", err)
+    console.error("error al crear factura:", err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -39,18 +68,53 @@ facturaCtrl.getFacturaById = async (req, res) => {
 // Actualizar factura
 facturaCtrl.updateFactura = async (req, res) => {
   try {
+    const { numero, cliente, productos, descuentos = 0, formaPago, cajero } = req.body;
+
+    if (!productos || productos.length === 0) {
+      return res.status(400).json({ error: "Debe incluir al menos un producto" });
+    }
+
+    // Calcular subtotal general
+    const subtotal = productos.reduce((acc, p) => acc + (p.cantidad * p.precioUnitario), 0);
+
+    // Calcular impuestos (ejemplo: 19% IVA)
+    const impuestos = subtotal * 0.19;
+
+    // Calcular total
+    const total = subtotal + impuestos - descuentos;
+
+    // Agregar subtotal a cada producto
+    const productosConSubtotal = productos.map(p => ({
+      ...p,
+      subtotal: p.cantidad * p.precioUnitario
+    }));
+
     const facturaActualizada = await Factura.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      {
+        numero,
+        cliente,
+        productos: productosConSubtotal,
+        subtotal,
+        impuestos,
+        descuentos,
+        total,
+        formaPago,
+        cajero
+      },
       { new: true }
     );
-    if (!facturaActualizada) return res.status(404).json({ mensaje: "Factura no encontrada" });
+
+    if (!facturaActualizada) {
+      return res.status(404).json({ mensaje: "Factura no encontrada" });
+    }
+
     res.json({ status: "Factura actualizada", factura: facturaActualizada });
   } catch (err) {
+    console.error("Error al actualizar factura:", err);
     res.status(400).json({ error: err.message });
   }
 };
-
 // Eliminar factura
 facturaCtrl.deleteFactura = async (req, res) => {
   try {
@@ -78,7 +142,12 @@ facturaCtrl.imprimirFactura = async (req, res) => {
 
     doc.fontSize(14).text(`Número: ${factura.numero}`);
     doc.text(`Fecha: ${factura.fecha.toLocaleDateString()}`);
-    doc.text(`Monto: $${factura.monto}`);
+    doc.text(`Subtotal: $${factura.subtotal}`);
+    doc.text(`Impuestos: $${factura.impuestos}`);
+    doc.text(`Descuentos: $${factura.descuentos}`);
+    doc.text(`Total: $${factura.total}`);
+    doc.text(`Forma de pago: ${factura.formaPago}`);
+    doc.text(`Cajero: ${factura.cajero}`);
     doc.moveDown();
 
     doc.fontSize(16).text("Datos del Cliente:");
@@ -87,6 +156,12 @@ facturaCtrl.imprimirFactura = async (req, res) => {
     doc.text(`Cédula: ${factura.cliente.cedula}`);
     doc.text(`Celular: ${factura.cliente.celular}`);
     doc.text(`Correo: ${factura.cliente.correo}`);
+    doc.moveDown();
+
+    doc.fontSize(16).text("Productos:");
+    factura.productos.forEach(p => {
+      doc.fontSize(14).text(`${p.descripcion} - Cantidad: ${p.cantidad} - Precio: $${p.precioUnitario} - Subtotal: $${p.subtotal}`);
+    });
 
     doc.end();
   } catch (err) {
